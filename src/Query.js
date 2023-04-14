@@ -1,3 +1,5 @@
+import github from "./db";
+
 const githubQuery = (
     pageCount,
     queryString,
@@ -10,7 +12,7 @@ const githubQuery = (
         viewer {
           name
         }
-        search(query: "${queryString} user:planetoftheweb sort:updated-desc", type: REPOSITORY, ${paginationKeyword}: ${pageCount}, ${paginationString}) {
+        search(query: "${queryString} user:${github.username} sort:updated-desc", type: REPOSITORY, ${paginationKeyword}: ${pageCount}, ${paginationString}) {
           repositoryCount
           edges {
             cursor
@@ -38,29 +40,5 @@ const githubQuery = (
     `,
     };
   };
-/* 
-const githubQuery = {
-    query:`
-      {
-        viewer {
-            name
-        }
-        search(query: "user:sergiobtos sort:updated-desc", type: REPOSITORY, first: 20) {
-            nodes {
-                ... on Repository {
-                    name
-                    description
-                    id
-                    url
-                    viewerSubscription
-                    licenseInfo {
-                      spdxId
-                    }
-                }
-            }
-        }
-      }
-    `,
-  }; */
   
   export default githubQuery;

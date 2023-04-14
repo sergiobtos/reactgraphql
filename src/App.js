@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 import query from "./Query";
 import RepoInfo from "./RepoInfo";
 import SearchBox from "./SearchBox";
+import NavButtons from "./NavButton";
 
 function App() {
   const [userName, setUserName] = useState('');
@@ -11,8 +12,17 @@ function App() {
   const [queryString, setQueryString] = useState("");
   const [totalCount, setTotalCount] = useState(null);
 
+  let [startCursor, setStartCursor] = useState(null);
+  let [endCursor, setEndCursor] = useState(null);
+  let [hasPreviousPage, setHasPreviousPage] = useState(false);
+  let [hasNextPage, setHasNextPage] = useState(true);
+  let [paginationKeyword, setPaginationKeyword] = useState("first");
+  let [paginationString, setPaginationString] = useState("");
+
   const fetchData = useCallback(async () => {
-    const queryText = JSON.stringify(query(pageCount, queryString))
+    const queryText = JSON.stringify(
+      query(pageCount, queryString, paginationKeyword, paginationString)
+    );
 
     fetch(github.baseUrl, {
       method: "POST",
@@ -21,16 +31,25 @@ function App() {
     })
     .then((res) => res.json())
     .then((data) => {
-      console.log('data', data);
       const viewer = data.data.viewer;
-      const repos = data.data.search.nodes;
+      const repos = data.data.search.edges;
       const total = data.data.search.repositoryCount;
+      const start = data.data.search.pageInfo?.startCursor;
+      const end = data.data.search.pageInfo?.endCursor;
+      const next = data.data.search.pageInfo?.hasNextPage;
+      const prev = data.data.search.pageInfo?.hasPreviousPage;
+
       setUserName(viewer.name);
       setRepoList(repos);
       setTotalCount(total);
+
+      setStartCursor(start);
+      setEndCursor(end);
+      setHasNextPage(next);
+      setHasPreviousPage(prev);
     })
     .catch((err) => {console.log('Error', err)});
-  },[pageCount, queryString]);
+  },[pageCount, queryString, paginationString, paginationKeyword]);
 
   useEffect(() => {
      fetchData();
@@ -49,13 +68,34 @@ function App() {
       onQueryChange={(myString) => {setQueryString(myString)}}
       onTotalChange={(myNumber) => {setPageCount(myNumber)}}
       />
+      <NavButtons
+        start={startCursor}
+        end={endCursor}
+        next={hasNextPage}
+        previous={hasPreviousPage}
+        onPage={(myKeyword, myString) => {
+          setPaginationKeyword(myKeyword);
+          setPaginationString(myString);
+        }}
+      />
       {repoList && (
         <ul className="list-group list-group-flush">
           {repoList.map((repo) => (
-            <RepoInfo key={repo.id} repo={repo} />
+            <RepoInfo key={repo.node.id} repo={repo.node} />
           ))}
         </ul>
       )}
+
+      <NavButtons
+        start={startCursor}
+        end={endCursor}
+        next={hasNextPage}
+        previous={hasPreviousPage}
+        onPage={(myKeyword, myString) => {
+          setPaginationKeyword(myKeyword);
+          setPaginationString(myString);
+        }}
+      />
     </div>
   );
 }
