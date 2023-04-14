@@ -1,4 +1,4 @@
-const githubQuery2 = (
+const githubQuery = (
     pageCount,
     queryString,
     paginationKeyword,
@@ -38,15 +38,29 @@ const githubQuery2 = (
     `,
     };
   };
-
+/* 
 const githubQuery = {
     query:`
       {
         viewer {
-          name
+            name
+        }
+        search(query: "user:sergiobtos sort:updated-desc", type: REPOSITORY, first: 20) {
+            nodes {
+                ... on Repository {
+                    name
+                    description
+                    id
+                    url
+                    viewerSubscription
+                    licenseInfo {
+                      spdxId
+                    }
+                }
+            }
         }
       }
     `,
-  };
+  }; */
   
   export default githubQuery;
